@@ -1,0 +1,17 @@
+node_modules/
+**/node_modules/
+
+.env
+.env.*
+!.env.example
+
+artifacts/
+cache/
+
+dist/
+build/
+
+*.log
+.vscode/
+.DS_Store
+Thumbs.db

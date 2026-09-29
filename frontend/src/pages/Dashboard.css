@@ -1,0 +1,725 @@
+/* =========================================================
+   BLOCKATTEND — DASHBOARD
+   File: src/pages/Dashboard.css
+   ========================================================= */
+
+/* ---------- Page Header ---------- */
+
+.dashboard-page {
+  animation: dashboardFadeIn 0.45s ease;
+}
+
+.dashboard-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.dashboard-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: #7890a2;
+  margin-bottom: 8px;
+}
+
+.dashboard-title {
+  margin: 0 0 7px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(26px, 3vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  color: #10243a;
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  color: #6d7d8c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.dashboard-role-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  background: #ffffff;
+  border: 1px solid #e3e9ee;
+  border-radius: 10px;
+  color: #2867c7;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  box-shadow: 0 3px 12px rgba(16, 36, 58, 0.04);
+}
+
+.dashboard-role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #25b789;
+  box-shadow: 0 0 0 4px #e4f7f0;
+}
+
+
+/* ---------- Blockchain Hero ---------- */
+
+.dashboard-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 205px;
+  padding: 30px 34px;
+  margin-bottom: 18px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(79, 151, 206, 0.18),
+      transparent 30%
+    ),
+    linear-gradient(125deg, #0c263c, #153c59);
+
+  color: #ffffff;
+  box-shadow: 0 16px 40px rgba(14, 41, 63, 0.14);
+
+  animation: heroAppear 0.55s ease;
+}
+
+.dashboard-hero::before {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  right: -90px;
+  bottom: -150px;
+
+  border: 1px solid rgba(142, 226, 196, 0.15);
+  border-radius: 50%;
+}
+
+.dashboard-hero::after {
+  content: "";
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  right: 15px;
+  top: -110px;
+
+  border: 1px solid rgba(142, 226, 196, 0.12);
+  border-radius: 50%;
+}
+
+.dashboard-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 700px;
+}
+
+.dashboard-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 6px 10px;
+  border: 1px solid rgba(142, 226, 196, 0.25);
+  border-radius: 99px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: #9be8cd;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.dashboard-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #63d9b0;
+
+  box-shadow: 0 0 0 4px rgba(99, 217, 176, 0.12);
+
+  animation: statusPulse 2s infinite;
+}
+
+.dashboard-hero-title {
+  margin: 13px 0 8px;
+
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.dashboard-hero-text {
+  max-width: 690px;
+  margin: 0;
+
+  color: #c6d4df;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.dashboard-hero-shield {
+  position: relative;
+  z-index: 2;
+
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+
+  margin-right: 4%;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(142, 226, 196, 0.25);
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow:
+    inset 0 0 30px rgba(142, 226, 196, 0.04),
+    0 0 35px rgba(99, 217, 176, 0.05);
+
+  animation: shieldFloat 4s ease-in-out infinite;
+}
+
+.dashboard-hero-shield svg {
+  width: 47px;
+  height: 47px;
+  color: #8ee2c4;
+}
+
+
+/* ---------- Statistics ---------- */
+
+.dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 18px;
+}
+
+.dashboard-stat {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 145px;
+  padding: 19px;
+
+  background: #ffffff;
+  border: 1px solid #e3e9ee;
+  border-radius: 15px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+
+  animation: statAppear 0.5s ease both;
+}
+
+.dashboard-stat:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.dashboard-stat:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.dashboard-stat:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.dashboard-stat:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.dashboard-stat:hover {
+  transform: translateY(-4px);
+  border-color: #d5e0e9;
+  box-shadow: 0 12px 30px rgba(16, 36, 58, 0.08);
+}
+
+.dashboard-stat::after {
+  content: "";
+  position: absolute;
+
+  width: 75px;
+  height: 75px;
+
+  right: -30px;
+  bottom: -35px;
+
+  border-radius: 50%;
+  background: #f3f7fb;
+}
+
+.dashboard-stat-icon {
+  position: relative;
+  z-index: 1;
+
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 10px;
+  background: #e9f0ff;
+  color: #2867c7;
+}
+
+.dashboard-stat-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.dashboard-stat-label {
+  display: block;
+
+  color: #748594;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.dashboard-stat-value {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #10243a;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+
+/* ---------- Main Panel ---------- */
+
+.dashboard-panel {
+  background: #ffffff;
+  border: 1px solid #e3e9ee;
+  border-radius: 16px;
+  overflow: hidden;
+
+  animation: dashboardFadeIn 0.55s ease;
+}
+
+.dashboard-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px 22px;
+
+  border-bottom: 1px solid #edf1f4;
+}
+
+.dashboard-panel-title {
+  margin: 0;
+
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #10243a;
+}
+
+.dashboard-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #8292a0;
+  font-size: 10px;
+}
+
+.dashboard-panel-meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #25b789;
+}
+
+
+/* ---------- Attendance Table ---------- */
+
+.dashboard-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th {
+  padding: 12px 18px;
+
+  text-align: left;
+
+  background: #fafcfd;
+  border-bottom: 1px solid #edf1f4;
+
+  color: #8292a0;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.dashboard-table td {
+  padding: 15px 18px;
+
+  border-bottom: 1px solid #edf1f4;
+
+  color: #334b5e;
+  font-size: 12px;
+}
+
+.dashboard-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.dashboard-table tbody tr:hover {
+  background: #f8fbfd;
+}
+
+.dashboard-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-course-code {
+  display: inline-block;
+
+  color: #10243a;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.dashboard-course-name {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #8292a0;
+  font-size: 10px;
+}
+
+
+/* ---------- Status Badge ---------- */
+
+.dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 9px;
+
+  border-radius: 99px;
+
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.dashboard-badge::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dashboard-badge.present {
+  background: #dff5ed;
+  color: #16866a;
+}
+
+.dashboard-badge.present::before {
+  background: #16866a;
+}
+
+.dashboard-badge.absent {
+  background: #fdeaea;
+  color: #b74646;
+}
+
+.dashboard-badge.absent::before {
+  background: #b74646;
+}
+
+
+/* ---------- Blockchain Proof Badge ---------- */
+
+.dashboard-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 9px;
+
+  border-radius: 99px;
+
+  background: #f0f2f4;
+  color: #7b8994;
+
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-proof.confirmed {
+  background: #e2f6ef;
+  color: #16866a;
+}
+
+.dashboard-proof-icon {
+  width: 11px;
+  height: 11px;
+}
+
+
+/* ---------- Role Information Cards ---------- */
+
+.dashboard-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.dashboard-info-card {
+  position: relative;
+  overflow: hidden;
+
+  min-height: 155px;
+  padding: 23px;
+
+  background: #ffffff;
+  border: 1px solid #e3e9ee;
+  border-radius: 15px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.dashboard-info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(16, 36, 58, 0.08);
+}
+
+.dashboard-info-card::after {
+  content: "";
+
+  position: absolute;
+  width: 110px;
+  height: 110px;
+
+  right: -55px;
+  bottom: -55px;
+
+  border-radius: 50%;
+  background: #f2f7fb;
+}
+
+.dashboard-info-card h3 {
+  position: relative;
+  z-index: 1;
+
+  margin: 0 0 9px;
+
+  color: #10243a;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard-info-card p {
+  position: relative;
+  z-index: 1;
+
+  max-width: 300px;
+  margin: 0;
+
+  color: #6d7d8c;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+
+/* ---------- Empty State ---------- */
+
+.dashboard-empty {
+  padding: 45px 20px;
+
+  text-align: center;
+  color: #8292a0;
+  font-size: 12px;
+}
+
+.dashboard-empty-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  margin: 0 auto 12px;
+
+  border-radius: 12px;
+  background: #f1f5f8;
+  color: #7890a2;
+}
+
+
+/* ---------- Animations ---------- */
+
+@keyframes dashboardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes statAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statusPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(99, 217, 176, 0.12);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(99, 217, 176, 0.03);
+  }
+}
+
+@keyframes shieldFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1050px) {
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .dashboard-topbar {
+    gap: 15px;
+    flex-direction: column;
+  }
+
+  .dashboard-hero {
+    padding: 24px;
+  }
+
+  .dashboard-hero-shield {
+    display: none;
+  }
+
+  .dashboard-stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 12px;
+  }
+}
+
+
+@media (max-width: 500px) {
+  .dashboard-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero-title {
+    font-size: 20px;
+  }
+
+  .dashboard-panel-header {
+    align-items: flex-start;
+    gap: 8px;
+    flex-direction: column;
+  }
+}
+
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page,
+  .dashboard-hero,
+  .dashboard-stat,
+  .dashboard-panel {
+    animation: none;
+  }
+
+  .dashboard-hero-shield,
+  .dashboard-status-dot {
+    animation: none;
+  }
+
+  .dashboard-stat,
+  .dashboard-info-card,
+  .dashboard-table tbody tr {
+    transition: none;
+  }
+}
