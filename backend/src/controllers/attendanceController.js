@@ -69,21 +69,36 @@ export async function markAttendance(req, res) {
     }
 
     /* -------------------------
-       Check course
+       Check course and assigned faculty
        ------------------------- */
 
     const [courses] = await conn.query(
-      `SELECT id
+      `SELECT id, faculty_id
        FROM courses
        WHERE id = ?`,
       [courseId]
     );
 
-    if (!courses.length) {
+    const course = courses[0];
+
+    if (!course) {
       await conn.rollback();
 
       return res.status(400).json({
         message: "Invalid course",
+      });
+    }
+
+    // Faculty can mark attendance only for their assigned courses.
+    // Admin can mark attendance for any course.
+    if (
+      req.user.role === "FACULTY" &&
+      Number(course.faculty_id) !== Number(req.user.id)
+    ) {
+      await conn.rollback();
+
+      return res.status(403).json({
+        message: "You are not assigned to this course",
       });
     }
 
@@ -553,7 +568,8 @@ export async function verifyAttendance(req, res) {
         u.name AS student_name,
         u.roll_no,
         c.code AS course_code,
-        c.name AS course_name
+        c.name AS course_name,
+        c.faculty_id
        FROM attendance a
        JOIN users u
          ON u.id = a.student_id
@@ -568,6 +584,17 @@ export async function verifyAttendance(req, res) {
     if (!row) {
       return res.status(404).json({
         message: "Attendance not found",
+      });
+    }
+
+    // Faculty can verify records only for their assigned courses.
+    // Admin can verify any record.
+    if (
+      req.user.role === "FACULTY" &&
+      Number(row.faculty_id) !== Number(req.user.id)
+    ) {
+      return res.status(403).json({
+        message: "You are not assigned to this course",
       });
     }
 
@@ -668,7 +695,8 @@ export async function listAllAttendance(req, res) {
         c.code AS course_code,
         c.name AS course_name,
 
-        f.name AS faculty_name
+        f.name AS faculty_name,
+        recorder.name AS recorded_by_name
 
        FROM attendance a
 
@@ -679,7 +707,10 @@ export async function listAllAttendance(req, res) {
          ON c.id = a.course_id
 
        LEFT JOIN users f
-         ON f.id = a.recorded_by
+         ON f.id = c.faculty_id
+
+       LEFT JOIN users recorder
+         ON recorder.id = a.recorded_by
 
        ORDER BY
          a.attendance_date DESC,
@@ -750,6 +781,80 @@ export async function stats(req, res) {
 
     res.status(500).json({
       message: "Unable to load statistics",
+      error: error.message,
+    });
+  }
+}
+
+/* =========================================================
+   FACULTY COURSES
+   ========================================================= */
+
+export async function listFacultyCourses(req, res) {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+        c.id,
+        c.code,
+        c.name,
+        c.faculty_id,
+        u.name AS faculty_name
+       FROM courses c
+       LEFT JOIN users u ON u.id = c.faculty_id
+       WHERE c.faculty_id = ?
+       ORDER BY c.code`,
+      [req.user.id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("List faculty courses error:", error);
+
+    res.status(500).json({
+      message: "Unable to load faculty courses",
+      error: error.message,
+    });
+  }
+}
+
+/* =========================================================
+   FACULTY ATTENDANCE
+   Shows records for courses assigned to this faculty,
+   including records entered by Admin.
+   ========================================================= */
+
+export async function listFacultyAttendance(req, res) {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+        a.id,
+        a.student_id,
+        a.course_id,
+        DATE_FORMAT(a.attendance_date, '%Y-%m-%d') AS attendance_date,
+        a.status,
+        a.recorded_by,
+        a.recorded_at,
+        a.attendance_hash,
+        a.blockchain_tx_hash,
+        a.blockchain_status,
+        s.name AS student_name,
+        s.roll_no,
+        c.code AS course_code,
+        c.name AS course_name
+       FROM attendance a
+       JOIN users s ON s.id = a.student_id
+       JOIN courses c ON c.id = a.course_id
+       WHERE c.faculty_id = ?
+       ORDER BY a.attendance_date DESC, a.id DESC`,
+      [req.user.id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("List faculty attendance error:", error);
+
+    res.status(500).json({
+      message: "Unable to load faculty attendance",
       error: error.message,
     });
   }

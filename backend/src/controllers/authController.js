@@ -50,6 +50,10 @@ export async function login(req, res) {
         role: user.role,
         email: user.email,
         rollNo: user.roll_no,
+        semester: user.semester,
+        className: user.class_name,
+        employeeId: user.employee_id,
+        designation: user.designation,
         department: user.department,
         center: user.center,
       },
@@ -77,6 +81,10 @@ export async function me(req, res) {
         email,
         role,
         roll_no,
+        semester,
+        class_name,
+        employee_id,
+        designation,
         department,
         center
        FROM users
@@ -115,6 +123,10 @@ export async function listUsers(req, res) {
         email,
         role,
         roll_no,
+        semester,
+        class_name,
+        employee_id,
+        designation,
         department,
         center,
         created_at
@@ -146,13 +158,13 @@ export async function createUser(req, res) {
       password,
       role,
       roll_no,
+      semester,
+      class_name,
+      employee_id,
+      designation,
       department,
       center,
     } = req.body;
-
-    /* -------------------------
-       Validation
-       ------------------------- */
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({
@@ -173,6 +185,28 @@ export async function createUser(req, res) {
     }
 
     /* -------------------------
+       Validate role-specific details
+       ------------------------- */
+
+    if (role === "STUDENT") {
+      if (!roll_no || !semester || !class_name || !department) {
+        return res.status(400).json({
+          message:
+            "Student roll number, semester, class and department are required",
+        });
+      }
+    }
+
+    if (role === "FACULTY") {
+      if (!employee_id || !designation || !department) {
+        return res.status(400).json({
+          message:
+            "Faculty employee ID, designation and department are required",
+        });
+      }
+    }
+
+    /* -------------------------
        Check duplicate email
        ------------------------- */
 
@@ -188,10 +222,67 @@ export async function createUser(req, res) {
     }
 
     /* -------------------------
+       Check duplicate student roll number
+       ------------------------- */
+
+    if (role === "STUDENT") {
+      const [existingRoll] = await pool.query(
+        `SELECT id
+         FROM users
+         WHERE roll_no = ? AND role = 'STUDENT'`,
+        [roll_no]
+      );
+
+      if (existingRoll.length > 0) {
+        return res.status(409).json({
+          message: "This student roll number already exists",
+        });
+      }
+    }
+
+    /* -------------------------
+       Check duplicate faculty employee ID
+       ------------------------- */
+
+    if (role === "FACULTY") {
+      const [existingEmployee] = await pool.query(
+        `SELECT id
+         FROM users
+         WHERE employee_id = ? AND role = 'FACULTY'`,
+        [employee_id]
+      );
+
+      if (existingEmployee.length > 0) {
+        return res.status(409).json({
+          message: "This faculty employee ID already exists",
+        });
+      }
+    }
+
+    /* -------------------------
        Hash password
        ------------------------- */
 
     const passwordHash = await bcrypt.hash(password, 10);
+
+    /* -------------------------
+       Prepare role-specific values
+       ------------------------- */
+
+    const studentRollNo =
+      role === "STUDENT" ? roll_no : null;
+
+    const studentSemester =
+      role === "STUDENT" ? semester : null;
+
+    const studentClass =
+      role === "STUDENT" ? class_name : null;
+
+    const facultyEmployeeId =
+      role === "FACULTY" ? employee_id : null;
+
+    const facultyDesignation =
+      role === "FACULTY" ? designation : null;
 
     /* -------------------------
        Insert user
@@ -199,14 +290,30 @@ export async function createUser(req, res) {
 
     const [result] = await pool.query(
       `INSERT INTO users
-       (name, email, password_hash, role, roll_no, department, center)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (
+         name,
+         email,
+         password_hash,
+         role,
+         roll_no,
+         semester,
+         class_name,
+         employee_id,
+         designation,
+         department,
+         center
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         email,
         passwordHash,
         role,
-        roll_no || null,
+        studentRollNo || null,
+        studentSemester || null,
+        studentClass || null,
+        facultyEmployeeId || null,
+        facultyDesignation || null,
         department || null,
         center || null,
       ]
@@ -229,6 +336,12 @@ export async function createUser(req, res) {
           name,
           email,
           role,
+          roll_no: studentRollNo || null,
+          semester: studentSemester || null,
+          class_name: studentClass || null,
+          employee_id: facultyEmployeeId || null,
+          designation: facultyDesignation || null,
+          department: department || null,
         }),
       ]
     );
@@ -240,7 +353,11 @@ export async function createUser(req, res) {
         name,
         email,
         role,
-        roll_no: roll_no || null,
+        roll_no: studentRollNo || null,
+        semester: studentSemester || null,
+        class_name: studentClass || null,
+        employee_id: facultyEmployeeId || null,
+        designation: facultyDesignation || null,
         department: department || null,
         center: center || null,
       },
@@ -250,7 +367,7 @@ export async function createUser(req, res) {
 
     if (error.code === "ER_DUP_ENTRY") {
       return res.status(409).json({
-        message: "A user with this email already exists",
+        message: "A user with this email or ID already exists",
       });
     }
 
@@ -275,8 +392,6 @@ export async function deleteUser(req, res) {
     });
   }
 
-  /* Prevent Admin from deleting their own account */
-
   if (userId === Number(req.user.id)) {
     return res.status(400).json({
       message: "You cannot delete your own account",
@@ -287,10 +402,6 @@ export async function deleteUser(req, res) {
 
   try {
     await conn.beginTransaction();
-
-    /* -------------------------
-       Find user
-       ------------------------- */
 
     const [users] = await conn.query(
       `SELECT id, name, email, role
@@ -308,17 +419,6 @@ export async function deleteUser(req, res) {
         message: "User not found",
       });
     }
-
-    /* -------------------------
-       Delete user
-       -------------------------
-       
-       Attendance has foreign keys to users.
-       Courses may also reference faculty.
-
-       To keep deletion safe, we first remove
-       related records that use RESTRICT behavior.
-    */
 
     await conn.query(
       "DELETE FROM audit_logs WHERE actor_id = ?",
@@ -339,14 +439,6 @@ export async function deleteUser(req, res) {
       "DELETE FROM users WHERE id = ?",
       [userId]
     );
-
-    /* -------------------------
-       Create audit record
-       -------------------------
-       
-       The user's own audit records were removed,
-       so record the deletion using the Admin actor.
-    */
 
     await conn.query(
       `INSERT INTO audit_logs
@@ -395,7 +487,10 @@ export async function listStudents(req, res) {
       `SELECT
         id,
         name,
-        roll_no
+        roll_no,
+        semester,
+        class_name,
+        department
        FROM users
        WHERE role = 'STUDENT'
        ORDER BY name`
@@ -407,6 +502,37 @@ export async function listStudents(req, res) {
 
     res.status(500).json({
       message: "Unable to load students",
+      error: error.message,
+    });
+  }
+}
+
+/* =========================================================
+   LIST FACULTY
+   ADMIN ONLY — FOR COURSE ASSIGNMENT
+   ========================================================= */
+
+export async function listFaculty(req, res) {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+        id,
+        name,
+        email,
+        employee_id,
+        designation,
+        department
+       FROM users
+       WHERE role = 'FACULTY'
+       ORDER BY name`
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("List faculty error:", error);
+
+    res.status(500).json({
+      message: "Unable to load faculty",
       error: error.message,
     });
   }

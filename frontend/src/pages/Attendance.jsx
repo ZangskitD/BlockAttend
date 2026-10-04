@@ -28,34 +28,20 @@ export default function Attendance() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Load courses
+  // Load courses assigned to the logged-in faculty
   useEffect(() => {
     api
       .get("/attendance/courses")
       .then((r) => setCourses(r.data))
       .catch(() => setCourses([]));
-
-    api
-      .get("/attendance/student", {
-        params: { studentId: 0 },
-      })
-      .catch(() => {});
   }, []);
 
-  // Load students
+  // Load registered students
   useEffect(() => {
     api
       .get("/auth/students")
       .then((r) => setStudents(r.data))
-      .catch(() =>
-        setStudents([
-          {
-            id: 3,
-            name: "Demo Student",
-            roll_no: "ST2026-101",
-          },
-        ])
-      );
+      .catch(() => setStudents([]));
   }, []);
 
   // Handle form changes
@@ -435,4 +421,3 @@ function Step({ n, title, text }) {
     </div>
   );
 }
-

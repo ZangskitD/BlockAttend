@@ -4,6 +4,8 @@ import {
   markAttendance,
   listStudentAttendance,
   listCourses,
+  listFacultyCourses,
+  listFacultyAttendance,
   createCourse,
   deleteCourse,
   verifyAttendance,
@@ -43,6 +45,28 @@ router.delete(
   auth,
   allow("ADMIN"),
   deleteCourse
+);
+
+/* =========================================================
+   FACULTY
+   ========================================================= */
+
+/* Courses assigned to logged-in faculty */
+
+router.get(
+  "/faculty/courses",
+  auth,
+  allow("FACULTY"),
+  listFacultyCourses
+);
+
+/* Attendance records recorded by logged-in faculty */
+
+router.get(
+  "/faculty",
+  auth,
+  allow("FACULTY"),
+  listFacultyAttendance
 );
 
 /* =========================================================

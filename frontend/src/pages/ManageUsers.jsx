@@ -9,6 +9,25 @@ import {
 
 import api from "../services/api";
 
+const emptyForm = {
+  name: "",
+  email: "",
+  password: "",
+  role: "STUDENT",
+
+  // Student details
+  roll_no: "",
+  semester: "",
+  class_name: "",
+
+  // Faculty details
+  employee_id: "",
+  designation: "",
+
+  // Common detail
+  department: "",
+};
+
 export default function ManageUsers() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -17,14 +36,7 @@ export default function ManageUsers() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "STUDENT",
-    roll_no: "",
-    department: "",
-  });
+  const [form, setForm] = useState({ ...emptyForm });
 
   useEffect(() => {
     loadUsers();
@@ -33,8 +45,11 @@ export default function ManageUsers() {
   async function loadUsers() {
     try {
       setLoading(true);
+
       const response = await api.get("/auth/users");
+
       setUsers(response.data);
+      setError("");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -46,10 +61,24 @@ export default function ManageUsers() {
   }
 
   function change(e) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
+  function handleRoleChange(e) {
+    const role = e.target.value;
+
+    setForm((prev) => ({
+      ...emptyForm,
+      name: prev.name,
+      email: prev.email,
+      password: prev.password,
+      role,
+    }));
   }
 
   async function createUser(e) {
@@ -66,17 +95,10 @@ export default function ManageUsers() {
           "User created successfully."
       );
 
-      setForm({
-        name: "",
-        email: "",
-        password: "",
-        role: "STUDENT",
-        roll_no: "",
-        department: "",
-      });
-
+      setForm({ ...emptyForm });
       setShowForm(false);
-      loadUsers();
+
+      await loadUsers();
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -105,7 +127,7 @@ export default function ManageUsers() {
           "User deleted successfully."
       );
 
-      loadUsers();
+      await loadUsers();
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -116,11 +138,15 @@ export default function ManageUsers() {
 
   const filteredUsers = users.filter((user) => {
     const text = `
+      ${user.id || ""}
       ${user.name || ""}
       ${user.email || ""}
       ${user.role || ""}
       ${user.roll_no || ""}
       ${user.department || ""}
+      ${user.semester || ""}
+      ${user.class_name || ""}
+      ${user.employee_id || ""}
     `.toLowerCase();
 
     return text.includes(search.toLowerCase());
@@ -140,7 +166,6 @@ export default function ManageUsers() {
 
   return (
     <section className="admin-page">
-
       {/* HEADER */}
       <div className="admin-header">
         <div>
@@ -158,14 +183,14 @@ export default function ManageUsers() {
         <div className="admin-header-action">
           <button
             className="primary"
-            onClick={() =>
-              setShowForm(!showForm)
-            }
+            onClick={() => {
+              setShowForm(!showForm);
+              setError("");
+              setMessage("");
+            }}
           >
             <Plus size={17} />
-            {showForm
-              ? "Close Form"
-              : "Add User"}
+            {showForm ? "Close Form" : "Add User"}
           </button>
         </div>
       </div>
@@ -196,11 +221,9 @@ export default function ManageUsers() {
             : "admin-grid single"
         }
       >
-
         {/* CREATE USER */}
         {showForm && (
           <div className="admin-form">
-
             <h3>Create User</h3>
 
             <p className="admin-form-subtitle">
@@ -209,6 +232,10 @@ export default function ManageUsers() {
             </p>
 
             <form onSubmit={createUser}>
+              {/* BASIC DETAILS */}
+              <div className="form-section-title">
+                Basic Details
+              </div>
 
               <label>
                 Full Name
@@ -250,7 +277,8 @@ export default function ManageUsers() {
                 <select
                   name="role"
                   value={form.role}
-                  onChange={change}
+                  onChange={handleRoleChange}
+                  required
                 >
                   <option value="STUDENT">
                     Student
@@ -266,25 +294,156 @@ export default function ManageUsers() {
                 </select>
               </label>
 
-              <label>
-                Roll Number
-                <input
-                  name="roll_no"
-                  value={form.roll_no}
-                  onChange={change}
-                  placeholder="e.g. ST2026-101"
-                />
-              </label>
+              {/* STUDENT DETAILS */}
+              {form.role === "STUDENT" && (
+                <>
+                  <div className="form-section-title">
+                    Student Details
+                  </div>
 
-              <label>
-                Department
-                <input
-                  name="department"
-                  value={form.department}
-                  onChange={change}
-                  placeholder="e.g. Computer Science"
-                />
-              </label>
+                  <label>
+                    Roll Number
+                    <input
+                      name="roll_no"
+                      value={form.roll_no}
+                      onChange={change}
+                      placeholder="Enter student roll number"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Semester
+                    <select
+                      name="semester"
+                      value={form.semester}
+                      onChange={change}
+                      required
+                    >
+                      <option value="">
+                        Select semester
+                      </option>
+
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map(
+                        (sem) => (
+                          <option
+                            key={sem}
+                            value={sem}
+                          >
+                            Semester {sem}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </label>
+
+                  <label>
+                    Class / Section
+                    <input
+                      name="class_name"
+                      value={form.class_name}
+                      onChange={change}
+                      placeholder="e.g. MCA-A"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Department
+                    <input
+                      name="department"
+                      value={form.department}
+                      onChange={change}
+                      placeholder="e.g. Computer Science"
+                      required
+                    />
+                  </label>
+                </>
+              )}
+
+              {/* FACULTY DETAILS */}
+              {form.role === "FACULTY" && (
+                <>
+                  <div className="form-section-title">
+                    Faculty Details
+                  </div>
+
+                  <label>
+                    Employee ID
+                    <input
+                      name="employee_id"
+                      value={form.employee_id}
+                      onChange={change}
+                      placeholder="Enter employee ID"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    Designation
+                    <select
+                      name="designation"
+                      value={form.designation}
+                      onChange={change}
+                      required
+                    >
+                      <option value="">
+                        Select designation
+                      </option>
+
+                      <option value="Assistant Professor">
+                        Assistant Professor
+                      </option>
+
+                      <option value="Associate Professor">
+                        Associate Professor
+                      </option>
+
+                      <option value="Professor">
+                        Professor
+                      </option>
+
+                      <option value="Guest Faculty">
+                        Guest Faculty
+                      </option>
+
+                      <option value="Lecturer">
+                        Lecturer
+                      </option>
+                    </select>
+                  </label>
+
+                  <label>
+                    Department
+                    <input
+                      name="department"
+                      value={form.department}
+                      onChange={change}
+                      placeholder="e.g. Computer Science"
+                      required
+                    />
+                  </label>
+                </>
+              )}
+
+              {/* ADMIN DETAILS */}
+              {form.role === "ADMIN" && (
+                <>
+                  <div className="form-section-title">
+                    Admin Details
+                  </div>
+
+                  <label>
+                    Department
+                    <input
+                      name="department"
+                      value={form.department}
+                      onChange={change}
+                      placeholder="Enter department"
+                    />
+                  </label>
+                </>
+              )}
 
               <div className="admin-form-actions">
                 <button
@@ -295,7 +454,6 @@ export default function ManageUsers() {
                   Create User
                 </button>
               </div>
-
             </form>
 
             <div className="admin-security-note">
@@ -307,13 +465,11 @@ export default function ManageUsers() {
                 kept secure.
               </p>
             </div>
-
           </div>
         )}
 
         {/* USER LIST */}
         <div className="admin-list">
-
           <div className="admin-list-header">
             <div>
               <h3>Registered Users</h3>
@@ -335,7 +491,7 @@ export default function ManageUsers() {
 
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search by name, email, ID or role..."
                 value={search}
                 onChange={(e) =>
                   setSearch(e.target.value)
@@ -373,9 +529,7 @@ export default function ManageUsers() {
                 className="admin-user-row"
                 key={user.id}
               >
-
                 <div className="admin-user-info">
-
                   <div className="admin-user-avatar">
                     {initials(user.name)}
                   </div>
@@ -383,24 +537,34 @@ export default function ManageUsers() {
                   <div className="admin-user-text">
                     <b>{user.name}</b>
 
+                    <span>{user.email}</span>
+
                     <span>
-                      {user.email}
+                      ID: {user.id}
+                      {user.role === "STUDENT" &&
+                      user.roll_no
+                        ? ` • Roll No: ${user.roll_no}`
+                        : ""}
+                      {user.role === "STUDENT" &&
+                      user.semester
+                        ? ` • Semester: ${user.semester}`
+                        : ""}
+                      {user.role === "STUDENT" &&
+                      user.class_name
+                        ? ` • Class: ${user.class_name}`
+                        : ""}
+                      {user.role === "FACULTY" &&
+                      user.employee_id
+                        ? ` • Employee ID: ${user.employee_id}`
+                        : ""}
+                      {user.department
+                        ? ` • ${user.department}`
+                        : ""}
                     </span>
-
-                    {user.roll_no && (
-                      <span>
-                        {user.roll_no}
-                        {user.department
-                          ? ` • ${user.department}`
-                          : ""}
-                      </span>
-                    )}
                   </div>
-
                 </div>
 
                 <div className="admin-user-meta">
-
                   <span
                     className={`admin-role ${
                       user.role?.toLowerCase() || ""
@@ -412,23 +576,16 @@ export default function ManageUsers() {
                   <button
                     className="delete-button"
                     title="Delete user"
-                    onClick={() =>
-                      deleteUser(user.id)
-                    }
+                    onClick={() => deleteUser(user.id)}
                   >
                     <Trash2 />
                   </button>
-
                 </div>
-
               </div>
             ))
           )}
-
         </div>
-
       </div>
-
     </section>
   );
-}  
+}

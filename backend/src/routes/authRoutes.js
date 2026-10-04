@@ -7,12 +7,12 @@ import {
   createUser,
   deleteUser,
   listStudents,
+  listFaculty,
 } from "../controllers/authController.js";
 
 import { auth, allow } from "../middleware/auth.js";
 
 const router = Router();
-
 
 /* =========================================================
    AUTH
@@ -32,6 +32,18 @@ router.get(
   auth,
   allow("FACULTY", "ADMIN"),
   listStudents
+);
+
+/* =========================================================
+   FACULTY LIST
+   ADMIN ONLY — FOR COURSE ASSIGNMENT
+   ========================================================= */
+
+router.get(
+  "/faculty",
+  auth,
+  allow("ADMIN"),
+  listFaculty
 );
 
 /* =========================================================
